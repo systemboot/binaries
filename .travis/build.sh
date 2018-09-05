@@ -9,4 +9,3 @@ cd kexec-tools
 git checkout -b "${KEXEC_TOOLS_VERSION}"
 ./configure
 make
-
