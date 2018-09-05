@@ -11,3 +11,4 @@ git checkout -b "${KEXEC_TOOLS_VERSION}"
 ./configure
 make
 strip build/sbin/*
+du -hs build/sbin/*
