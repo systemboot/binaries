@@ -8,7 +8,9 @@ matrix:
 addons:
   apt:
     packages:
-      - musl
+      - libpci-dev
+      - libusb-dev
+      - libusb-1.0-0-dev
 
 script:
-  - ./.travis/build.sh
+  - ./build.sh
