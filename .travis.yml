@@ -1,16 +1,23 @@
 sudo: false
-
 matrix:
   include:
-    - os: linux
-      env: TARGET=x86_64-unknown-linux-musl
-
+  - os: linux
+    env: TARGET=x86_64-unknown-linux-musl
 addons:
   apt:
     packages:
-      - libpci-dev
-      - libusb-dev
-      - libusb-1.0-0-dev
-
+    - libpci-dev
+    - libusb-dev
+    - libusb-1.0-0-dev
 script:
-  - ./build.sh
+- "./build.sh"
+deploy:
+  provider: releases
+  api_key:
+    secure: xHEq2kNLMugIPGGcF6freAiIi+tKa25xnzn0XAEDUBdim9SV55HIPq5Vf3M9fBoogoiGV/sv2wVfR23EkPzyD9+eT9iyWVyQrQ+kRZ4NVjAVXpSOHJch86DL8xveiD26hAmCDjCOv/CZmVIUBdqGozt2yemtzT811GMtOC5liKLpC0Z8eAmRL+/BMEo0zSjZteQOVKh5E2dKqC/mYJaFmhiEjhAb98vGGTDIHS5x3jauerhYCGuoTWNdmlw05U07P5LEtoUo0KoIePs0CDAj5MR5IY60RjFBcbUWH/prmiew6NKhzet50qMsK46YzfG3Li8RwNQGyT6+azq5/h1kb968F8vzD5F/0GpELAWcEPktZKP6FZj179nA1FfS/MKeD02yxZ1knugXcGZ97k+itcKrsm246Nr/ATCwYoyyFiUyF8SWVtOCm+DBsdC2SS5SLnTZn+/HYq82V4Y1IsaAkV73NPZra28PMHqt1dvYA2jb7y+PZu1oHOKo3ZThpT0t/akPeQ8JJUWi5yaQxb6J3VR6nd13s6JAUi2ehIbWHGWFmIPxvAaiyf9AS6VL+Fn3nGxoFWY/xVbrbT5fL93edAogagiJrUUjRQleVmMyN9AryiTWByFh7d2RjmXoiYrvIqTvoe5ZyPj8medL54u9+YpmTMOkELdJm6rjVtNLtJk=
+  file:
+  - build/kexec-tools/build/sbin/kexec/kexec
+  - build/flashrom/flashrom
+  skip_cleanup: true
+  on:
+    repo: systemboot/binaries
