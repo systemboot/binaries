@@ -11,7 +11,7 @@ mkdir -p "${OUTDIR}"
 
 # build kexec-tools
 cd "${OUTDIR}"
-git clone https://github.com/horms/kexec-tools.git
+git clone git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
 cd kexec-tools
 git checkout -b "${KEXEC_TOOLS_VERSION}"
 ./bootstrap
