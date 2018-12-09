@@ -18,6 +18,7 @@ deploy:
   file:
   - build/kexec-tools/build/sbin/kexec
   - build/flashrom/flashrom
+  - build/memtester/memtester
   skip_cleanup: true
   on:
     repo: systemboot/binaries

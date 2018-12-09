@@ -5,6 +5,7 @@ BASEDIR="${PWD}"
 OUTDIR="${BASEDIR}/build"
 KEXEC_TOOLS_VERSION="tags/v2.0.17"
 FLASHROM_VERSION="tags/v1.0"
+MEMTESTER_VERSION=4.3.0
 
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
@@ -30,3 +31,13 @@ make
 strip flashrom
 du -hs flashrom
 ldd flashrom
+
+# build memtester
+cd "${OUTDIR}"
+wget "http://pyropus.ca/software/memtester/old-versions/memtester-${MEMTESTER_VERSION}.tar.gz"
+tar xvzf "memtester-${MEMTESTER_VERSION}".tar.gz
+ln -s "memtester-${MEMTESTER_VERSION}" memtester
+cd "memtester-${MEMTESTER_VERSION}"
+make # build statically
+du -hs memtester
+ldd memtester
