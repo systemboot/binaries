@@ -6,6 +6,7 @@ OUTDIR="${BASEDIR}/build"
 KEXEC_TOOLS_VERSION="tags/v2.0.17"
 FLASHROM_VERSION="tags/v1.0"
 MEMTESTER_VERSION=4.3.0
+VPD_VERSION="release-R74-11895.B"
 
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
@@ -45,3 +46,13 @@ cd "memtester-${MEMTESTER_VERSION}"
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
 ldd memtester
+
+# build vpd
+cd "${OUTDIR}"
+git clone https://chromium.googlesource.com/chromiumos/platform/vpd
+cd vpd
+git checkout "${VPD_VERSION}"
+make
+strip vpd
+du -hs vpd
+ldd vpd
