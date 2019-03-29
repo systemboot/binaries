@@ -1,14 +1,16 @@
-sudo: false
+dist: xenial
 matrix:
   include:
   - os: linux
-    env: TARGET=x86_64-unknown-linux-musl
 addons:
   apt:
     packages:
+    - musl-dev
     - libpci-dev
     - libusb-dev
     - libusb-1.0-0-dev
+    - uuid-dev
+    - linux-libc-dev
 script:
 - "./build.sh"
 deploy:
