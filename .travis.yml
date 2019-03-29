@@ -21,6 +21,7 @@ deploy:
   - build/kexec-tools/build/sbin/kexec
   - build/flashrom/flashrom
   - build/memtester/memtester
+  - build/vpd/vpd
   skip_cleanup: true
   on:
     repo: systemboot/binaries
