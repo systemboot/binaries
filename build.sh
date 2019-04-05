@@ -11,6 +11,18 @@ VPD_VERSION="release-R74-11895.B"
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
+check_if_statically_linked() {
+    f=$1
+    # ldd exits with an error if it's not a dynamic executable, so exit 0 here
+    # means error, 
+    ldd "${f}" && \
+        (
+            echo "ERROR: $f is not statically linked"
+            exit 1
+        ) || \
+            true # all good
+}
+
 # build kexec-tools
 cd "${OUTDIR}"
 git clone git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
@@ -19,11 +31,11 @@ git checkout -b "${KEXEC_TOOLS_VERSION}"
 ./bootstrap
 # just optimize for space. Kexec uses kernel headers so we cannot use musl-gcc
 # here. See https://wiki.musl-libc.org/faq.html#Q:-Why-am-I-getting- 
-CFLAGS=-Os ./configure
+CFLAGS=-Os LDFLAGS=-static ./configure
 make
 strip build/sbin/kexec
 du -hs build/sbin/kexec
-ldd build/sbin/kexec
+check_if_statically_linked build/sbin/kexec
 
 # build flashrom
 cd "${OUTDIR}"
@@ -32,10 +44,13 @@ cd flashrom
 git checkout -b "${FLASHROM_VERSION}"
 # no musl-gcc here either, as flashrom needs libpci-dev (we may remove PCI
 # programmers from the build at a later stage though)
-CFLAGS=-Os make
+CONFIG_STATIC=yes \
+    CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no \
+    CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no \
+    make
 strip flashrom
 du -hs flashrom
-ldd flashrom
+check_if_statically_linked flashrom
 
 # build memtester
 cd "${OUTDIR}"
@@ -45,7 +60,7 @@ ln -s "memtester-${MEMTESTER_VERSION}" memtester
 cd "memtester-${MEMTESTER_VERSION}"
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
-ldd memtester
+check_if_statically_linked memtester
 
 # build vpd
 cd "${OUTDIR}"
@@ -53,6 +68,9 @@ git clone https://chromium.googlesource.com/chromiumos/platform/vpd
 cd vpd
 git checkout "${VPD_VERSION}"
 make
+# rename vpd_s to vpd for our purposes. This overwrites the original,
+# dynamically linked, vpd binary, but we don't need it.
+mv vpd_s vpd
 strip vpd
 du -hs vpd
-ldd vpd
+check_if_statically_linked vpd
