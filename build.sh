@@ -9,7 +9,7 @@ MEMTESTER_VERSION=4.3.0
 VPD_VERSION="release-R85-13310.B"
 
 rm -rf "${OUTDIR}"
-mkdir -p "${OUTDIR}"
+mkdir -p "${OUTDIR}/binaries"
 
 check_if_statically_linked() {
     f=$1
@@ -36,7 +36,7 @@ make
 strip build/sbin/kexec
 du -hs build/sbin/kexec
 check_if_statically_linked build/sbin/kexec
-mv build/sbin/kexec "build/sbin/kexec-${KEXEC_TOOLS_VERSION#tags/}"
+cp build/sbin/kexec "${OUTDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION#tags/}"
 
 # build flashrom
 cd "${OUTDIR}"
@@ -52,7 +52,7 @@ CONFIG_STATIC=yes \
 strip flashrom
 du -hs flashrom
 check_if_statically_linked flashrom
-mv flashrom "flashrom-${FLASHROM_VERSION#tags/}"
+cp flashrom "${OUTDIR}/binaries/flashrom-${FLASHROM_VERSION#tags/}"
 
 # build memtester
 cd "${OUTDIR}"
@@ -63,7 +63,7 @@ cd "memtester-${MEMTESTER_VERSION}"
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
 check_if_statically_linked memtester
-mv memtester "memtester-${MEMTESTER_VERSION}"
+cp memtester "${OUTDIR}/binaries/memtester-${MEMTESTER_VERSION}"
 
 # build vpd
 cd "${OUTDIR}"
@@ -77,13 +77,14 @@ mv vpd_s vpd
 strip vpd
 du -hs vpd
 check_if_statically_linked vpd
-mv vpd "vpd-${VPD_VERSION}"
+cp vpd "${OUTDIR}/binaries/vpd-${VPD_VERSION}"
 
 
 # Create tarball
 cd "${OUTDIR}"
 tar czf release.tar.gz \
-    "kexec-tools/build/sbin/kexec-${KEXEC_TOOLS_VERSION#tags/}" \
-    "flashrom/flashrom-${FLASHROM_VERSION#tags/}" \
-    "memtester-${MEMTESTER_VERSION}/memtester-${MEMTESTER_VERSION}" \
-    "vpd/vpd-${VPD_VERSION}"
+    "binaries/kexec-${KEXEC_TOOLS_VERSION#tags/}" \
+    "binaries/flashrom-${FLASHROM_VERSION#tags/}" \
+    "binaries/memtester-${MEMTESTER_VERSION}" \
+    "binaries/vpd-${VPD_VERSION}"
+tar tzf release.tar.gz
