@@ -78,3 +78,12 @@ strip vpd
 du -hs vpd
 check_if_statically_linked vpd
 mv vpd "vpd-${VPD_VERSION}"
+
+
+# Create tarball
+cd "${OUTDIR}"
+tar czf release.tar.gz \
+    "kexec-tools/build/sbin/kexec-${KEXEC_TOOLS_VERSION#tags/}" \
+    "flashrom/flashrom-${FLASHROM_VERSION#tags/}" \
+    "memtester-${MEMTESTER_VERSION}/memtester-${MEMTESTER_VERSION}" \
+    "vpd/vpd-${VPD_VERSION}"
