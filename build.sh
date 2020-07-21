@@ -3,18 +3,18 @@ set -exu
 
 BASEDIR="${PWD}"
 OUTDIR="${BASEDIR}/build"
-KEXEC_TOOLS_VERSION="tags/v2.0.17"
-FLASHROM_VERSION="tags/v1.0"
+KEXEC_TOOLS_VERSION="tags/v2.0.20"
+FLASHROM_VERSION="tags/v1.1"
 MEMTESTER_VERSION=4.3.0
-VPD_VERSION="release-R74-11895.B"
+VPD_VERSION="release-R85-13310.B"
 
 rm -rf "${OUTDIR}"
 mkdir -p "${OUTDIR}"
 
 check_if_statically_linked() {
     f=$1
-    # ldd exits with an error if it's not a dynamic executable, so exit 0 here
-    # means error, 
+    # ldd exits with an error if it's not a dynamic executable, so exit 1 here
+    # is used as a non-static binary indicator.
     ldd "${f}" && \
         (
             echo "ERROR: $f is not statically linked"
@@ -36,6 +36,7 @@ make
 strip build/sbin/kexec
 du -hs build/sbin/kexec
 check_if_statically_linked build/sbin/kexec
+mv build/sbin/kexec "build/sbin/kexec-${KEXEC_TOOLS_VERSION#tags/}"
 
 # build flashrom
 cd "${OUTDIR}"
@@ -51,6 +52,7 @@ CONFIG_STATIC=yes \
 strip flashrom
 du -hs flashrom
 check_if_statically_linked flashrom
+mv flashrom "flashrom-${FLASHROM_VERSION#tags/}"
 
 # build memtester
 cd "${OUTDIR}"
@@ -61,6 +63,7 @@ cd "memtester-${MEMTESTER_VERSION}"
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
 check_if_statically_linked memtester
+mv memtester "memtester-${MEMTESTER_VERSION}"
 
 # build vpd
 cd "${OUTDIR}"
@@ -74,3 +77,4 @@ mv vpd_s vpd
 strip vpd
 du -hs vpd
 check_if_statically_linked vpd
+mv vpd "vpd-${VPD_VERSION}"
