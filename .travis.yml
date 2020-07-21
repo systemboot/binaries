@@ -18,10 +18,7 @@ deploy:
   api_key:
       secure: "xoA48v0aHkA+fYgRe0wbylVReRQY5d4UUpB5N2XUr2FDeyCUSOS1uOJpU/O7jS/cw9K6HVUcboNCKx7s1IHaMaIO8+rV7/yGwCqduoXRtZEz2iEcAeEE7bnfTbTr+PlgUPe55+oWu/qa4eMXKKMitkOt42xvq0BBFWSyIdXf/ei+EuiSa9aq2Uc4NNgzmfLwfa+d7UBYWOZ01doYVCLk/VemJYVLkJM+8RYfb2gPo5mX88nIHfhXSDgBQgtrtkpiMFhknexLCMFShwXUwdIS0nstZwhe+Mbc3YLkxfAG5fdtWNC6b7ZcW4eFPbaVpplQIpgzodPTIMc+BgakPaeOEs3OnAC19GodndFP+aCDwbvillYQJQS/pOITPTr0JG2SfeTahZtoU28jCrfGR8maQRARqteNoFRAnETqPFOoJtFxBUvtsl9BfoipoJ9nY0fttw+Hco/ijpazXQm5LhtwgajNYb8N8k+WqZ14OtgaApYyUWafVJyVgvIggCOUero3b/FhPguVbZUgSGAn2cZLmzFxflDPENfDw5FwvIuABhFwzZs2gY/9BDHULV7E0N/508hkytbQwJd7Glwuuhgf4hNvI3Lh32DLejKcnR0Q2kHu88j9n2UudCh1AOPSheMrCheRl4vnz84T5bUl7NfWgzkFzBqq1/HQNmxcK/a/3xs="
   file:
-  - build/kexec-tools/build/sbin/kexec
-  - build/flashrom/flashrom
-  - build/memtester/memtester
-  - build/vpd/vpd
+  - build/release.tar.gz
   skip_cleanup: true
   on:
     repo: systemboot/binaries
