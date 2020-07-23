@@ -7,8 +7,6 @@ addons:
     packages:
     - musl-dev
     - libpci-dev
-    - libusb-dev
-    - libusb-1.0-0-dev
     - uuid-dev
     - linux-libc-dev
 script:
