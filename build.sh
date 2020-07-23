@@ -3,8 +3,8 @@ set -exu
 
 BASEDIR="${PWD}"
 OUTDIR="${BASEDIR}/build"
-KEXEC_TOOLS_VERSION="tags/v2.0.20"
-FLASHROM_VERSION="tags/v1.1"
+KEXEC_TOOLS_VERSION="v2.0.20"
+FLASHROM_VERSION="v1.1"
 MEMTESTER_VERSION=4.3.0
 VPD_VERSION="release-R85-13310.B"
 
@@ -27,7 +27,7 @@ check_if_statically_linked() {
 cd "${OUTDIR}"
 git clone git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
 cd kexec-tools
-git checkout -b "${KEXEC_TOOLS_VERSION}"
+git checkout "${KEXEC_TOOLS_VERSION}"
 ./bootstrap
 # just optimize for space. Kexec uses kernel headers so we cannot use musl-gcc
 # here. See https://wiki.musl-libc.org/faq.html#Q:-Why-am-I-getting- 
@@ -36,23 +36,25 @@ make
 strip build/sbin/kexec
 du -hs build/sbin/kexec
 check_if_statically_linked build/sbin/kexec
-cp build/sbin/kexec "${OUTDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION#tags/}"
+cp build/sbin/kexec "${OUTDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION}"
 
 # build flashrom
 cd "${OUTDIR}"
 git clone https://review.coreboot.org/cgit/flashrom.git
 cd flashrom
-git checkout -b "${FLASHROM_VERSION}"
+git checkout "${FLASHROM_VERSION}"
 # no musl-gcc here either, as flashrom needs libpci-dev (we may remove PCI
 # programmers from the build at a later stage though)
 CONFIG_STATIC=yes \
     CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no \
+    CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no \
     CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no \
+    CONFIG_INTERNAL=yes \
     make
 strip flashrom
 du -hs flashrom
 check_if_statically_linked flashrom
-cp flashrom "${OUTDIR}/binaries/flashrom-${FLASHROM_VERSION#tags/}"
+cp flashrom "${OUTDIR}/binaries/flashrom-${FLASHROM_VERSION}"
 
 # build memtester
 cd "${OUTDIR}"
@@ -83,8 +85,8 @@ cp vpd "${OUTDIR}/binaries/vpd-${VPD_VERSION}"
 # Create tarball
 cd "${OUTDIR}"
 tar czf release.tar.gz \
-    "binaries/kexec-${KEXEC_TOOLS_VERSION#tags/}" \
-    "binaries/flashrom-${FLASHROM_VERSION#tags/}" \
+    "binaries/kexec-${KEXEC_TOOLS_VERSION}" \
+    "binaries/flashrom-${FLASHROM_VERSION}" \
     "binaries/memtester-${MEMTESTER_VERSION}" \
     "binaries/vpd-${VPD_VERSION}"
 tar tzf release.tar.gz
