@@ -2,14 +2,16 @@
 set -exu
 
 BASEDIR="${PWD}"
-OUTDIR="${BASEDIR}/build"
+BUILDDIR="${BASEDIR}/build"
 KEXEC_TOOLS_VERSION="v2.0.20"
+PCIUTILS_VERSION="v3.7.0"
 FLASHROM_VERSION="v1.1"
-MEMTESTER_VERSION=4.3.0
+MEMTESTER_VERSION="4.3.0"
+UTILLINUX_VERSION="v2.36"
 VPD_VERSION="release-R85-13310.B"
 
-rm -rf "${OUTDIR}"
-mkdir -p "${OUTDIR}/binaries"
+#rm -rf "${BUILDDIR}"/*
+mkdir -p "${BUILDDIR}/binaries"
 
 check_if_statically_linked() {
     f=$1
@@ -24,40 +26,49 @@ check_if_statically_linked() {
 }
 
 # build kexec-tools
-cd "${OUTDIR}"
+cd "${BUILDDIR}"
 git clone git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
 cd kexec-tools
 git checkout "${KEXEC_TOOLS_VERSION}"
 ./bootstrap
 # just optimize for space. Kexec uses kernel headers so we cannot use musl-gcc
 # here. See https://wiki.musl-libc.org/faq.html#Q:-Why-am-I-getting- 
-CFLAGS=-Os LDFLAGS=-static ./configure
+CFLAGS=-Os LDFLAGS=-static ./configure || (cat config.log ; exit 1)
 make
 strip build/sbin/kexec
 du -hs build/sbin/kexec
 check_if_statically_linked build/sbin/kexec
-cp build/sbin/kexec "${OUTDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION}"
+cp build/sbin/kexec "${BUILDDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION}"
+
+# build pciutils statically without udev support
+
+cd "${BUILDDIR}"
+git clone https://github.com/pciutils/pciutils.git
+cd pciutils
+git checkout "${PCIUTILS_VERSION}"
+HWDB=no SHARED=no make
+make install-lib
 
 # build flashrom
-cd "${OUTDIR}"
+cd "${BUILDDIR}"
 git clone https://review.coreboot.org/cgit/flashrom.git
 cd flashrom
 git checkout "${FLASHROM_VERSION}"
-# no musl-gcc here either, as flashrom needs libpci-dev (we may remove PCI
-# programmers from the build at a later stage though)
+
+# no musl-gcc here either, as flashrom needs libpci-dev
 CONFIG_STATIC=yes \
-    CONFIG_ENABLE_LIBPCI_PROGRAMMERS=no \
+    CONFIG_ENABLE_LIBPCI_PROGRAMMERS=yes \
     CONFIG_ENABLE_LIBUSB0_PROGRAMMERS=no \
     CONFIG_ENABLE_LIBUSB1_PROGRAMMERS=no \
     CONFIG_INTERNAL=yes \
-    make
+    make || (cat build_details.txt ; exit 1)
 strip flashrom
 du -hs flashrom
 check_if_statically_linked flashrom
-cp flashrom "${OUTDIR}/binaries/flashrom-${FLASHROM_VERSION}"
+cp flashrom "${BUILDDIR}/binaries/flashrom-${FLASHROM_VERSION}"
 
 # build memtester
-cd "${OUTDIR}"
+cd "${BUILDDIR}"
 wget "http://pyropus.ca/software/memtester/old-versions/memtester-${MEMTESTER_VERSION}.tar.gz"
 tar xvzf "memtester-${MEMTESTER_VERSION}".tar.gz
 ln -s "memtester-${MEMTESTER_VERSION}" memtester
@@ -65,10 +76,21 @@ cd "memtester-${MEMTESTER_VERSION}"
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
 check_if_statically_linked memtester
-cp memtester "${OUTDIR}/binaries/memtester-${MEMTESTER_VERSION}"
+cp memtester "${BUILDDIR}/binaries/memtester-${MEMTESTER_VERSION}"
+
+# CentOS does not provide static libuuid, so we have to build it on our own :(
+# libuuid is part of the LARGE util-linux package.
+cd "${BUILDDIR}"
+git clone https://github.com/karelzak/util-linux.git
+cd util-linux
+git checkout "${UTILLINUX_VERSION}"
+./autogen.sh
+./configure --without-udev --disable-all-programs --enable-libuuid
+make LDFLAGS="--static"
+make install
 
 # build vpd
-cd "${OUTDIR}"
+cd "${BUILDDIR}"
 git clone https://chromium.googlesource.com/chromiumos/platform/vpd
 cd vpd
 git checkout "${VPD_VERSION}"
@@ -79,14 +101,15 @@ mv vpd_s vpd
 strip vpd
 du -hs vpd
 check_if_statically_linked vpd
-cp vpd "${OUTDIR}/binaries/vpd-${VPD_VERSION}"
+cp vpd "${BUILDDIR}/binaries/vpd-${VPD_VERSION}"
 
 
 # Create tarball
-cd "${OUTDIR}"
+cd "${BUILDDIR}"
 tar czf release.tar.gz \
     "binaries/kexec-${KEXEC_TOOLS_VERSION}" \
     "binaries/flashrom-${FLASHROM_VERSION}" \
     "binaries/memtester-${MEMTESTER_VERSION}" \
     "binaries/vpd-${VPD_VERSION}"
-tar tzf release.tar.gz
+echo "Current working directory: $PWD"
+tar tvzf release.tar.gz
