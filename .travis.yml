@@ -1,16 +1,10 @@
-dist: xenial
-matrix:
-  include:
-  - os: linux
-addons:
-  apt:
-    packages:
-    - musl-dev
-    - libpci-dev
-    - uuid-dev
-    - linux-libc-dev
+services:
+  - docker
+before_install:
+  - rm -rf build ; mkdir build
+  - docker build -t systemboot/binaries -f Dockerfile .
 script:
-- "./build.sh"
+  - docker run --rm -it -v "${PWD}/build:/work/build" systemboot/binaries
 deploy:
   provider: releases
   api_key:
