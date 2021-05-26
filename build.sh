@@ -46,7 +46,7 @@ cd "${BUILDDIR}"
 git clone https://github.com/pciutils/pciutils.git
 cd pciutils
 git checkout "${PCIUTILS_VERSION}"
-HWDB=no SHARED=no make
+make HWDB=no SHARED=no
 make install-lib
 
 # build flashrom
