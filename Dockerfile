@@ -17,6 +17,7 @@ RUN dnf install -y \
         cmake \
         make \
         clang \
+        patch \
         glibc-static glibc-devel \
         zlib-static zlib-devel \
         `# to download memtester` \
@@ -25,5 +26,6 @@ RUN dnf install -y \
         gettext-autopoint bison libtool
 
 WORKDIR /work
+COPY patches patches/
 COPY build.sh .
 CMD ./build.sh

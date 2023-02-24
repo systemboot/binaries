@@ -3,6 +3,7 @@ set -exu
 
 BASEDIR="${PWD}"
 BUILDDIR="${BASEDIR}/build"
+PATCHDIR="${BASEDIR}/patches"
 KEXEC_TOOLS_VERSION="v2.0.20"
 PCIUTILS_VERSION="v3.7.0"
 FLASHROM_VERSION="51e1d0e4b7670e5822560acc724a6a8dd00b6af4"
@@ -25,11 +26,17 @@ check_if_statically_linked() {
             true # all good
 }
 
+apply_patches() {
+    subdir=$1
+    find "${PATCHDIR}/${subdir}" -name \*.patch -exec patch -p1 -i "{}" \;
+}
+
 # build kexec-tools
 cd "${BUILDDIR}"
 git clone git://git.kernel.org/pub/scm/utils/kernel/kexec/kexec-tools.git
 cd kexec-tools
 git checkout "${KEXEC_TOOLS_VERSION}"
+apply_patches kexec-tools
 ./bootstrap
 # just optimize for space. Kexec uses kernel headers so we cannot use musl-gcc
 # here. See https://wiki.musl-libc.org/faq.html#Q:-Why-am-I-getting- 
@@ -41,11 +48,11 @@ check_if_statically_linked build/sbin/kexec
 cp build/sbin/kexec "${BUILDDIR}/binaries/kexec-${KEXEC_TOOLS_VERSION}"
 
 # build pciutils statically without udev support
-
 cd "${BUILDDIR}"
 git clone https://github.com/pciutils/pciutils.git
 cd pciutils
 git checkout "${PCIUTILS_VERSION}"
+apply_patches pciutils
 HWDB=no SHARED=no make
 make install-lib
 
@@ -54,6 +61,7 @@ cd "${BUILDDIR}"
 git clone https://github.com/flashrom/flashrom.git
 cd flashrom
 git checkout "${FLASHROM_VERSION}"
+apply_patches flashrom
 
 # no musl-gcc here either, as flashrom needs libpci-dev
 CONFIG_STATIC=yes \
@@ -73,6 +81,7 @@ wget "http://pyropus.ca/software/memtester/old-versions/memtester-${MEMTESTER_VE
 tar xvzf "memtester-${MEMTESTER_VERSION}".tar.gz
 ln -s "memtester-${MEMTESTER_VERSION}" memtester
 cd "memtester-${MEMTESTER_VERSION}"
+apply_patches memtester
 CFLAGS=-Os CC=musl-gcc make # build statically
 du -hs memtester
 check_if_statically_linked memtester
@@ -84,6 +93,7 @@ cd "${BUILDDIR}"
 git clone https://github.com/util-linux/util-linux.git
 cd util-linux
 git checkout "${UTILLINUX_VERSION}"
+apply_patches util-linux
 ./autogen.sh
 ./configure --without-udev --disable-all-programs --enable-libuuid
 make LDFLAGS="--static"
@@ -94,6 +104,7 @@ cd "${BUILDDIR}"
 git clone https://chromium.googlesource.com/chromiumos/platform/vpd
 cd vpd
 git checkout "${VPD_VERSION}"
+apply_patches vpd
 make
 # rename vpd_s to vpd for our purposes. This overwrites the original,
 # dynamically linked, vpd binary, but we don't need it.
