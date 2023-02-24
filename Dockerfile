@@ -1,12 +1,12 @@
-FROM centos:8
+FROM tgagor/centos:stream8
 
 LABEL BUILD="docker build -t systemboot/binaries -f Dockerfile ."
 LABEL RUN="docker run --rm -it -v "${PWD}/build:/work/build" systemboot/binaries"
 
 
 # enable repo for glibc-static
-RUN dnf install -y dnf-plugin-config-manager
-RUN dnf config-manager --enable PowerTools
+RUN dnf install -y dnf-plugins-core
+RUN dnf -y config-manager --set-enabled powertools
 # Install dependencies
 RUN dnf install -y \
         git \
