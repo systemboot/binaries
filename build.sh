@@ -51,7 +51,7 @@ make install-lib
 
 # build flashrom
 cd "${BUILDDIR}"
-git clone https://review.coreboot.org/cgit/flashrom.git
+git clone https://github.com/flashrom/flashrom.git
 cd flashrom
 git checkout "${FLASHROM_VERSION}"
 
@@ -81,7 +81,7 @@ cp memtester "${BUILDDIR}/binaries/memtester-${MEMTESTER_VERSION}"
 # CentOS does not provide static libuuid, so we have to build it on our own :(
 # libuuid is part of the LARGE util-linux package.
 cd "${BUILDDIR}"
-git clone https://github.com/karelzak/util-linux.git
+git clone https://github.com/util-linux/util-linux.git
 cd util-linux
 git checkout "${UTILLINUX_VERSION}"
 ./autogen.sh
